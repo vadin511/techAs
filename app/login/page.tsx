@@ -1,10 +1,12 @@
 "use client";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ChangeEvent, useState } from "react";
 import { FaEye, FaEyeSlash, FaUser, FaUserCircle } from "react-icons/fa";
 import { FaUnlockKeyhole } from "react-icons/fa6";
 
 const login = () => {
+  const router = useRouter();
   const [formLogin, setFormLogin] = useState<{
     phone: string;
     password: string;
@@ -13,6 +15,7 @@ const login = () => {
     password: "",
   });
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -34,12 +37,19 @@ const login = () => {
         body: JSON.stringify(formLogin),
       });
       const result = await res.json();
-
-      if (!res.ok) {
+      if (res.ok) {
         alert(result.message);
+        setFormLogin({ phone: "", password: "" });
+        router.push("/");
       } else {
-        alert("Đăng nhập thành công!");
-        console.log("Token:", result.token);
+        if (!res.ok) {
+          if (result.errors) {
+            console.log("Zod validation errors:", result.errors);
+            alert(result.errors[0].message);
+          } else {
+            alert(result.message);
+          }
+        }
       }
     } catch (error) {
       console.log(error);
